@@ -1,0 +1,113 @@
+name: Build and Release
+
+# Triggers on any tag of the form v1.2.3 (or v1.2.3-suffix)
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+permissions:
+  contents: write   # required to create the GitHub release
+
+jobs:
+  # -------------------------------------------------------------------------
+  # Build the binary on each target platform in parallel
+  # -------------------------------------------------------------------------
+  build:
+    name: Build · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            pyinstaller_args: >-
+              --onefile
+              --name VoyagerSaveManager
+              --add-data "badge.png:."
+              --hidden-import "PIL._tkinter_finder"
+              --collect-all "pynput"
+              --clean
+            binary:   VoyagerSaveManager
+            artifact: binary-linux
+
+          - os: windows-latest
+            pyinstaller_args: >-
+              --onefile
+              --windowed
+              --name VoyagerSaveManager
+              --add-data "badge.png;."
+              --hidden-import "PIL._tkinter_finder"
+              --collect-all "pynput"
+              --clean
+            binary:   VoyagerSaveManager.exe
+            artifact: binary-windows
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      # tkinter is not always present in the GitHub-hosted Ubuntu image's
+      # python build; installing the system package ensures it is available
+      # for PyInstaller to detect and bundle.
+      - name: Install system tkinter (Linux only)
+        if: runner.os == 'Linux'
+        run: sudo apt-get install -y python3-tk
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt pyinstaller
+
+      - name: Build binary
+        run: pyinstaller ${{ matrix.pyinstaller_args }} save_manager.py
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/${{ matrix.binary }}
+          if-no-files-found: error
+          retention-days: 1   # only needed long enough for the release job
+
+  # -------------------------------------------------------------------------
+  # Download both binaries and publish a GitHub release
+  # -------------------------------------------------------------------------
+  release:
+    name: Publish Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Linux binary
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-linux
+          path: artifacts/
+
+      - name: Download Windows binary
+        uses: actions/download-artifact@v4
+        with:
+          name: binary-windows
+          path: artifacts/
+
+      # Give the binaries platform-explicit names so users know which to pick
+      - name: Rename binaries
+        run: |
+          mv artifacts/VoyagerSaveManager     artifacts/VoyagerSaveManager-linux
+          mv artifacts/VoyagerSaveManager.exe artifacts/VoyagerSaveManager-windows.exe
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Voyager Save Manager ${{ github.ref_name }}"
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            artifacts/VoyagerSaveManager-linux
+            artifacts/VoyagerSaveManager-windows.exe

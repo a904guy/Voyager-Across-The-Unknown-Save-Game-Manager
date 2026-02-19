@@ -1,0 +1,7 @@
+<<<<<<< HEAD
+*.pyc
+=======
+*.pyc
+build
+dist
+>>>>>>> 78ac48d (First Commit)
