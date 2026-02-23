@@ -10,7 +10,26 @@ Quick-save and restore your game at any point, with a full history of backups yo
 ![Voyager Save Manager interface](https://github.com/a904guy/Voyager-Across-The-Unknown-Save-Game-Manager/blob/main/Screenshot.png?raw=true)
 
 
-## Download
+## Installation
+
+### Recommended: pipx (Linux/macOS)
+
+Install directly from GitHub using [pipx](https://pipx.pypa.io/):
+
+```bash
+pipx install git+https://github.com/a904guy/Voyager-Across-The-Unknown-Save-Game-Manager.git
+```
+
+Then run from anywhere:
+```bash
+voyager-save-manager
+```
+
+> **Requirements:** Python 3.12+ and system tkinter package (`python3-tk` on Ubuntu/Debian)
+
+### Alternative: Standalone Binaries
+
+If you prefer standalone executables or don't have Python installed:
 
 1. Go to the [**Releases**](https://github.com/a904guy/Voyager-Across-The-Unknown-Save-Game-Manager/releases/latest) page
 2. Download the file for your platform:
