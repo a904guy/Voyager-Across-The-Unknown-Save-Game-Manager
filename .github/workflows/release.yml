@@ -25,7 +25,7 @@ jobs:
             pyinstaller_args: >-
               --onefile
               --name VoyagerSaveManager
-              --add-data "badge.png:."
+              --add-data "voyager_save_manager/badge.png:."
               --hidden-import "PIL._tkinter_finder"
               --collect-all "pynput"
               --clean
@@ -37,7 +37,7 @@ jobs:
               --onefile
               --windowed
               --name VoyagerSaveManager
-              --add-data "badge.png;."
+              --add-data "voyager_save_manager/badge.png;."
               --hidden-import "PIL._tkinter_finder"
               --collect-all "pynput"
               --clean
@@ -52,7 +52,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: pip
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
 
       # tkinter is not always present in the GitHub-hosted Ubuntu image's
       # python build; installing the system package ensures it is available
@@ -62,10 +66,43 @@ jobs:
         run: sudo apt-get install -y python3-tk
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt pyinstaller
+        run: uv sync --group build
 
       - name: Build binary
-        run: pyinstaller ${{ matrix.pyinstaller_args }} save_manager.py
+        run: uv run pyinstaller ${{ matrix.pyinstaller_args }} voyager_save_manager/__main__.py
+
+      - name: Build AppImage (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y squashfs-tools
+
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+
+          mkdir -p AppDir/usr/bin
+          cp dist/VoyagerSaveManager AppDir/usr/bin/VoyagerSaveManager
+
+          cat > AppDir/AppRun << 'EOF'
+          #!/bin/sh
+          HERE="$(dirname "$(readlink -f "$0")")"
+          exec "$HERE/usr/bin/VoyagerSaveManager" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+
+          cat > AppDir/voyager-save-manager.desktop << 'EOF'
+          [Desktop Entry]
+          Type=Application
+          Name=Voyager Save Manager
+          Exec=VoyagerSaveManager
+          Icon=voyager-save-manager
+          Categories=Game;Utility;
+          Terminal=false
+          EOF
+
+          cp badge.png AppDir/voyager-save-manager.png
+
+          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir dist/VoyagerSaveManager-x86_64.AppImage
 
       - name: Build AppImage (Linux only)
         if: runner.os == 'Linux'

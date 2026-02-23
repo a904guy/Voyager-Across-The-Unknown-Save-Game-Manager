@@ -15,7 +15,7 @@ build = [
 ]
 
 [project.scripts]
-voyager-save-manager = "save_manager:main"
+voyager-save-manager = "voyager_save_manager:main"
 build-linux = "build_tools:build_linux"
 
 [build-system]
@@ -23,4 +23,8 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["save_manager", "build_tools"]
+packages = ["voyager_save_manager"]
+py-modules = ["build_tools"]
+
+[tool.setuptools.package-data]
+voyager_save_manager = ["badge.png"]

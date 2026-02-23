@@ -12,13 +12,13 @@ def build_linux() -> None:
         "--name",
         "VoyagerSaveManager",
         "--add-data",
-        "badge.png:.",
+        "voyager_save_manager/badge.png:.",
         "--hidden-import",
         "PIL._tkinter_finder",
         "--collect-all",
         "pynput",
         "--clean",
-        "save_manager.py",
+        "voyager_save_manager/__main__.py",
     ]
 
     subprocess.run(command, check=True)

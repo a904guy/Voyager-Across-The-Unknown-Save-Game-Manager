@@ -1,7 +1,31 @@
-<<<<<<< HEAD
+# Python
 *.pyc
-=======
-*.pyc
-build
-dist
->>>>>>> 78ac48d (First Commit)
+*.pyo
+__pycache__/
+*.egg-info/
+.Python
+
+# PyInstaller
+build/
+dist/
+*.spec.lock
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# uv
+.uv/
+uv.lock
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['save_manager.py'],
+    ['voyager_save_manager/__main__.py'],
     pathex=[],
     binaries=[],
-    datas=[('badge.png', '.')],
+    datas=[('voyager_save_manager/badge.png', '.')],
     hiddenimports=['PIL._tkinter_finder', 'pynput.keyboard._xorg', 'pynput.keyboard._uinput', 'pynput.mouse._xorg'],
     hookspath=[],
     hooksconfig={},

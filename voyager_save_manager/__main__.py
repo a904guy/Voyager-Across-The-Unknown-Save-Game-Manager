@@ -26,15 +26,25 @@ from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
 
 try:
+    from importlib.resources import files
+except ImportError:
+    from importlib_resources import files
+
+try:
     from pynput import keyboard as pynput_keyboard
     PYNPUT_AVAILABLE = True
 except ImportError:
     PYNPUT_AVAILABLE = False
 
 def _resource(filename: str) -> str:
-    """Resolve a bundled resource path (works in dev and PyInstaller --onefile)."""
-    base = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base, filename)
+    """Resolve a bundled resource path (works in package and PyInstaller --onefile)."""
+    if getattr(sys, "_MEIPASS", None):
+        # PyInstaller runtime
+        return os.path.join(sys._MEIPASS, filename)
+    else:
+        # Package installation
+        package_files = files("voyager_save_manager")
+        return str(package_files.joinpath(filename))
 
 
 # ---------------------------------------------------------------------------
