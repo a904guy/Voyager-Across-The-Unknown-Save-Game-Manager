@@ -1,0 +1,26 @@
+[project]
+name = "voyager-save-manager"
+version = "1.0.0"
+description = "Save game manager for Star Trek Voyager: Across the Unknown"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pynput>=1.7.6",
+    "Pillow>=10.0.0",
+]
+
+[dependency-groups]
+build = [
+    "pyinstaller>=6.0.0",
+]
+
+[project.scripts]
+voyager-save-manager = "save_manager:main"
+build-linux = "build_tools:build_linux"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["save_manager", "build_tools"]
