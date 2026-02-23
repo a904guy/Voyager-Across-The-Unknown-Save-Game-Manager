@@ -15,14 +15,16 @@ Quick-save and restore your game at any point, with a full history of backups yo
 1. Go to the [**Releases**](https://github.com/a904guy/Voyager-Across-The-Unknown-Save-Game-Manager/releases/latest) page
 2. Download the file for your platform:
    - **Windows** → `VoyagerSaveManager-windows.exe`
-   - **Linux** → `VoyagerSaveManager-linux`
+   - **Linux** → `VoyagerSaveManager-linux.AppImage`
 3. No installation required — just run it
 
 > **Linux:** you may need to mark the file as executable first:
 > ```bash
-> chmod +x VoyagerSaveManager-linux
-> ./VoyagerSaveManager-linux
+> chmod +x VoyagerSaveManager-linux.AppImage
+> ./VoyagerSaveManager-linux.AppImage
 > ```
+>
+> Prefer not to use AppImage? The release also includes a raw binary: `VoyagerSaveManager-linux`.
 
 ---
 

@@ -67,6 +67,39 @@ jobs:
       - name: Build binary
         run: pyinstaller ${{ matrix.pyinstaller_args }} save_manager.py
 
+      - name: Build AppImage (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y squashfs-tools
+
+          wget -q https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool-x86_64.AppImage
+
+          mkdir -p AppDir/usr/bin
+          cp dist/VoyagerSaveManager AppDir/usr/bin/VoyagerSaveManager
+
+          cat > AppDir/AppRun << 'EOF'
+          #!/bin/sh
+          HERE="$(dirname "$(readlink -f "$0")")"
+          exec "$HERE/usr/bin/VoyagerSaveManager" "$@"
+          EOF
+          chmod +x AppDir/AppRun
+
+          cat > AppDir/voyager-save-manager.desktop << 'EOF'
+          [Desktop Entry]
+          Type=Application
+          Name=Voyager Save Manager
+          Exec=VoyagerSaveManager
+          Icon=voyager-save-manager
+          Categories=Game;Utility;
+          Terminal=false
+          EOF
+
+          cp badge.png AppDir/voyager-save-manager.png
+
+          APPIMAGE_EXTRACT_AND_RUN=1 ARCH=x86_64 ./appimagetool-x86_64.AppImage AppDir dist/VoyagerSaveManager-x86_64.AppImage
+
       - name: Upload binary artifact
         uses: actions/upload-artifact@v4
         with:
@@ -74,6 +107,15 @@ jobs:
           path: dist/${{ matrix.binary }}
           if-no-files-found: error
           retention-days: 1   # only needed long enough for the release job
+
+      - name: Upload AppImage artifact
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage-linux
+          path: dist/VoyagerSaveManager-x86_64.AppImage
+          if-no-files-found: error
+          retention-days: 1
 
   # -------------------------------------------------------------------------
   # Download both binaries and publish a GitHub release
@@ -90,6 +132,12 @@ jobs:
           name: binary-linux
           path: artifacts/
 
+      - name: Download Linux AppImage
+        uses: actions/download-artifact@v4
+        with:
+          name: appimage-linux
+          path: artifacts/
+
       - name: Download Windows binary
         uses: actions/download-artifact@v4
         with:
@@ -100,6 +148,7 @@ jobs:
       - name: Rename binaries
         run: |
           mv artifacts/VoyagerSaveManager     artifacts/VoyagerSaveManager-linux
+          mv artifacts/VoyagerSaveManager-x86_64.AppImage artifacts/VoyagerSaveManager-linux.AppImage
           mv artifacts/VoyagerSaveManager.exe artifacts/VoyagerSaveManager-windows.exe
 
       - name: Create GitHub Release
@@ -110,4 +159,5 @@ jobs:
           fail_on_unmatched_files: true
           files: |
             artifacts/VoyagerSaveManager-linux
+            artifacts/VoyagerSaveManager-linux.AppImage
             artifacts/VoyagerSaveManager-windows.exe
